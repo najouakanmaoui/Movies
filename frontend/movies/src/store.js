@@ -45,7 +45,7 @@ export default createStore({
         },
         async updateMovieRating({ commit, dispatch }, updatedMovie) {
           try {
-            const response = await axios.patch(`/api/movies/${updatedMovie.id}/`, updatedMovie.movie);
+            const response = await axios.put(`/api/movies/${updatedMovie.id}/`, updatedMovie.movie);
             commit('setMovie', response.data);
             if (updatedMovie.rating) {
               const reviewData = updatedMovie.rating;
