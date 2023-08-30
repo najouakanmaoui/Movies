@@ -1,0 +1,48 @@
+version: "3.8"
+services:
+  backend_server:
+    build:
+      context: ./backend
+    container_name: "Backend"
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8081:8081"
+    command: >
+      sh -c "python manage.py makemigrations && 
+             python manage.py migrate && 
+             python movies/seed.py &&
+             python manage.py runserver 0.0.0.0:8081 "
+
+  celery_worker:
+    build:
+      context: ./backend
+    environment:
+      - CELERY_BROKER=redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+    command: >
+      sh -c "celery -A movies worker -l info"
+
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  frontend:
+    build:
+      context: ./frontend/movies
+    container_name: "Frontend"
+    ports:
+      - "8080:8080"
